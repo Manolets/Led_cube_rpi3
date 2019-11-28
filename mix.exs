@@ -1,19 +1,22 @@
 defmodule LedCubeRpi3.MixProject do
   use Mix.Project
 
+  @app :led_cube_rpi3
+  @version "0.1.0"
+  #@all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :x86_64]
   @target System.get_env("MIX_TARGET") || "host"
-
   def project do
     [
-      app: :led_cube_rpi3,
-      version: "0.1.0",
-      elixir: "~> 1.8",
-      target: @target,
-      archives: [nerves_bootstrap: "~> 1.5"],
+      app: @app,
+      version: @version,
+      elixir: "~> 1.9",
+      archives: [nerves_bootstrap: "~> 1.6"],
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
       aliases: [loadconfig: [&bootstrap/1]],
-      deps: deps()
+      deps: deps(),
+      releases: [{@app, release()}],
+      preferred_cli_target: [run: :host, test: :host]
     ]
   end
 
@@ -36,10 +39,11 @@ defmodule LedCubeRpi3.MixProject do
   defp deps do
     [
       # Dependencies for all targets
-      {:nerves, "~> 1.4", runtime: false},
-      {:shoehorn, "~> 0.4"},
+      {:nerves, "~> 1.5.0", runtime: false},
+      {:shoehorn, "~> 0.6"},
       {:ring_logger, "~> 0.6"},
-      {:toolshed, "~> 0.2"}
+      {:toolshed, "~> 0.2"},
+      {:distillery, "~> 2.1"}
     ] ++ deps(@target)
   end
 
@@ -49,15 +53,25 @@ defmodule LedCubeRpi3.MixProject do
       {:nerves_init_gadget, "~> 0.4"},
       {:pigpiox, path: "../pigpiox"},
       {:nerves_grove, path: "../nerves_grove"},
-      {:circuits_gpio, "~> 0.1"},
-      {:circuits_i2c, "~> 0.1"}
+      {:circuits_gpio, "~> 0.1"}
+      #{:circuits_i2c, "~> 0.1"}
     ] ++ system(target)
   end
 
-  defp system("rpi"), do: [{:nerves_system_rpi, "~> 1.6", runtime: false}]
-  defp system("rpi0"), do: [{:nerves_system_rpi0, "~> 1.6", runtime: false}]
-  defp system("rpi2"), do: [{:nerves_system_rpi2, "~> 1.6", runtime: false}]
-  defp system("rpi3"), do: [{:nerves_system_rpi3, "~> 1.6", runtime: false}]
-  defp system("bbb"), do: [{:nerves_system_bbb, "~> 2.0", runtime: false}]
-  defp system("x86_64"), do: [{:nerves_system_x86_64, "~> 1.6", runtime: false}]
+  defp system("rpi"), do: [{:nerves_system_rpi, "~> 1.8", runtime: false}]
+  defp system("rpi0"), do: [{:nerves_system_rpi0, "~> 1.8", runtime: false}]
+  defp system("rpi2"), do: [{:nerves_system_rpi2, "~> 1.8", runtime: false}]
+  defp system("rpi3"), do: [{:nerves_system_rpi3, "~> 1.8", runtime: false}]
+  defp system("bbb"), do: [{:nerves_system_bbb, "~> 2.3", runtime: false}]
+  defp system("x86_64"), do: [{:nerves_system_x86_64, "~> 1.8", runtime: false}]
+
+  def release do
+    [
+      overwrite: true,
+      cookie: "#{@app}_cookie",
+      include_erts: &Nerves.Release.erts/0,
+      steps: [&Nerves.Release.init/1, :assemble],
+      strip_beams: Mix.env() == :prod
+    ]
+  end
 end

@@ -3,21 +3,18 @@ defmodule LedCubeRpi3.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  @target Mix.target()
-
   use Application
-  # alias LedCubeRpi3.CubeSupervisor, as: CubeSupervisor
 
   def start(_type, _args) do
-    # import Supervisor.Spec
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: LedCubeRpi3.Supervisor]
-
     children =
       [
-        # supervisor(CubeSupervisor, [], id: make_ref(), restart: :permanent)
-      ] ++ children(@target)
+        # Children for all targets
+        # Starts a worker by calling: LedCubeRpi3.Worker.start_link(arg)
+        # {LedCubeRpi3.Worker, arg},
+      ] ++ children(target())
 
     Supervisor.start_link(children, opts)
   end
@@ -25,6 +22,7 @@ defmodule LedCubeRpi3.Application do
   # List all child processes to be supervised
   def children(:host) do
     [
+      # Children that only run on the host
       # Starts a worker by calling: LedCubeRpi3.Worker.start_link(arg)
       # {LedCubeRpi3.Worker, arg},
     ]
@@ -32,8 +30,13 @@ defmodule LedCubeRpi3.Application do
 
   def children(_target) do
     [
+      # Children for all targets except host
       # Starts a worker by calling: LedCubeRpi3.Worker.start_link(arg)
       # {LedCubeRpi3.Worker, arg},
     ]
+  end
+
+  def target() do
+    Application.get_env(:led_cube_rpi3, :target)
   end
 end
