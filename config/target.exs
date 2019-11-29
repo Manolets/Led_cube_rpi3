@@ -37,12 +37,11 @@ config :nerves_init_gadget,
   node_name: node_name,
   node_host: :mdns_domain
 
-  config :nerves_network,
+config :nerves_network,
   regulatory_domain: "ES"
 
-  key_mgmt = System.get_env("NERVES_NETWORK_KEY_MGMT") || "WPA-PSK"
+key_mgmt = System.get_env("NERVES_NETWORK_KEY_MGMT") || "WPA-PSK"
 
-  
 config :nerves_network, :default,
   wlan0: [
     ipv4_address_method: :dhcp,

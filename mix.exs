@@ -3,7 +3,7 @@ defmodule LedCubeRpi3.MixProject do
 
   @app :led_cube_rpi3
   @version "0.1.0"
-  #@all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :x86_64]
+  # @all_targets [:rpi, :rpi0, :rpi2, :rpi3, :rpi3a, :rpi4, :bbb, :x86_64]
   @target System.get_env("MIX_TARGET") || "host"
   def project do
     [
@@ -54,7 +54,7 @@ defmodule LedCubeRpi3.MixProject do
       {:pigpiox, path: "../pigpiox"},
       {:nerves_grove, path: "../nerves_grove"},
       {:circuits_gpio, "~> 0.1"}
-      #{:circuits_i2c, "~> 0.1"}
+      # {:circuits_i2c, "~> 0.1"}
     ] ++ system(target)
   end
 

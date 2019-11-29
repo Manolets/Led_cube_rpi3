@@ -3,7 +3,7 @@ defmodule LedCubeRpi3.Server do
   alias Nerves.Grove.MCP23017.Fns, as: GroveFns
   alias Nerves.Grove.MCP23017.Supervisor, as: GroveSupervisor
   alias LedCubeRpi3.MCP23017.{Fns, Supervisor}
-  alias LedCubeRpi3.Translator
+  alias LedCubeRpi3.{Translator, Caracteres}
   alias Pigpiox.GPIO
   require Logger
 
@@ -37,7 +37,8 @@ defmodule LedCubeRpi3.Server do
       layer3: [],
       layer4: [],
       layer5: [],
-      layer6: []
+      layer6: [],
+      layer_delay: 500
     }
 
     LedCubeRpi3.Buttons.start_link(self())
@@ -129,12 +130,13 @@ defmodule LedCubeRpi3.Server do
     pos =
       if pos == 6 do
         pos = 0
+        Process.send(self(), :last_layer_change, [:nosuspend])
         pos
       else
         pos
       end
 
-    Process.sleep(10)
+    Process.sleep(state.layer_delay)
     Process.send(self(), {:layer_rotation, pos + 1}, [:nosuspend])
 
     {:noreply, state}
@@ -147,6 +149,28 @@ defmodule LedCubeRpi3.Server do
 
       _ ->
         :ok
+    end
+
+    {:noreply, state}
+  end
+
+  ##################################################################
+  @doc """
+  Definición de formas (de iluminación)
+  """
+
+  def handle_info({:palabra, word}, state) do
+    word = String.codepoints(word)
+
+    for c <- word do
+      for layer <- 1..6 do
+        GenServer.cast(self(), {:set_layer_leds, layer, Caracteres.select_case(c)})
+      end
+      receive do
+        :last_layer_change ->
+          :ok
+      end
+      
     end
 
     {:noreply, state}

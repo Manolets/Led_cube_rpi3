@@ -4,7 +4,7 @@ defmodule LedCubeRpi3.Buttons do
 
   @moduledoc """
   This is where all the functions and animations are going to be defined, as well as the use of some buttons
-  
+
   LedCubeRpi3.CubeSupervisor.start_link()
 
   GenServer.cast({:via, Registry, {:cube_registry, :cube_server}}, {:set_layer_leds, 1, [:aa, :bb, :cc, :dd, :ee, :ff]})
