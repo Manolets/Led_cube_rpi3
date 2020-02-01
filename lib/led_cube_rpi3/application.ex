@@ -6,7 +6,6 @@ defmodule LedCubeRpi3.Application do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: LedCubeRpi3.Supervisor]
@@ -16,7 +15,6 @@ defmodule LedCubeRpi3.Application do
         # Children for all targets
         # Starts a worker by calling: LedCubeRpi3.Worker.start_link(arg)
         # {LedCubeRpi3.Worker, arg},
-        # supervisor(LedCubeRpi3.CubeSupervisor, [:ok], id: make_ref(), restart: :permanent)
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)

@@ -73,30 +73,24 @@ defmodule LedCubeRpi3.Buttons do
     GPIO.watch(20)
     GPIO.watch(21)
     state = pid
-
     {:ok, state}
   end
 
-  def handle_info({:gpio_leveL_change, gpio, level}, state) do
-    if level == 0 do
-      case gpio do
-        16 ->
-          # clara()
-          :ok
+  def handle_info({:gpio_leveL_change, gpio, _level}, state) do
+    case gpio do
+      16 ->
+        for n <- 1..6 do
+          GenServer.cast(via_tuple(:cube_server), {:set_layer_leds, n, [nil]})
+        end
 
-        20 ->
-          :next
+      20 ->
+        :next
 
-        21 ->
-          :prev
-      end
+      21 ->
+        :prev
     end
 
     {:noreply, state}
-  end
-
-  def clara() do
-    Process.send(via_tuple(:cube_server), {:palabra, :clara@}, [:nosuspend])
   end
 
   def fn1() do

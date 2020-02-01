@@ -9,7 +9,7 @@ defmodule LedCubeRpi3.MixProject do
     [
       app: @app,
       version: @version,
-      elixir: "~> 1.9.4",
+      elixir: "~> 1.9",
       archives: [nerves_bootstrap: "~> 1.6"],
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
