@@ -9,7 +9,7 @@ defmodule LedCubeRpi3.Server do
 
   @layer_gpios [7, 8, 9, 11, 17, 27]
   @moduledoc """
-  @all_leds [:aa, :ab, :ac, :ad, :ae, :af, :ba, :bb, :bc, :bd, :be, :bf, :ca, :cb, :cc, :cd, :ce, 
+  @all_leds [:aa, :ab, :ac, :ad, :ae, :af, :ba, :bb, :bc, :bd, :be, :bf, :ca, :cb, :cc, :cd, :ce,
   :cf, :da, :db, :dc, :dd, :de, :df, :ea, :eb, :ec, :ed, :ee, :ef, :fa, :fb, :fc, :fd, :fe, :ff]
   """
 
@@ -32,12 +32,7 @@ defmodule LedCubeRpi3.Server do
     end
 
     state = %{
-      layer1: [],
-      layer2: [],
-      layer3: [],
-      layer4: [],
-      layer5: [],
-      layer6: [],
+      layer_leds: [],
       layer_delay: 500
     }
 
@@ -59,32 +54,10 @@ defmodule LedCubeRpi3.Server do
     {:noreply, state}
   end
 
-  def handle_cast({:set_layer_leds, layer, list}, state) do
-    state =
-      case layer do
-        1 ->
-          Map.put(state, :layer1, list)
+  def handle_cast({:set_layer_leds, list}, state) do
+    state = Map.put(state, :layer_leds, list)
 
-        2 ->
-          Map.put(state, :layer2, list)
-
-        3 ->
-          Map.put(state, :layer3, list)
-
-        4 ->
-          Map.put(state, :layer4, list)
-
-        5 ->
-          Map.put(state, :layer5, list)
-
-        6 ->
-          Map.put(state, :layer6, list)
-
-        _ ->
-          nil
-      end
-
-    Logger.debug("This leds: #{inspect(list)}, in layer #{inspect(layer)}")
+    Logger.debug("This leds: #{inspect(list)}")
 
     {:noreply, state}
   end
@@ -95,7 +68,6 @@ defmodule LedCubeRpi3.Server do
   end
 
   def handle_info({:layer_rotation, pos}, state) do
-    Translator.all_leds_off()
 
     for pin <- [7, 8, 9, 11, 17, 27] do
       GPIO.write(pin, 1)
@@ -103,27 +75,27 @@ defmodule LedCubeRpi3.Server do
 
     case pos do
       1 ->
-        Translator.leds_on(state.layer1)
+        Translator.all_leds_off()
+        Translator.leds_on(state.layer_leds)
         GPIO.write(7, 0)
 
       2 ->
-        Translator.leds_on(state.layer2)
         GPIO.write(8, 0)
 
       3 ->
-        Translator.leds_on(state.layer3)
+
         GPIO.write(11, 0)
 
       4 ->
-        Translator.leds_on(state.layer4)
+
         GPIO.write(9, 0)
 
       5 ->
-        Translator.leds_on(state.layer5)
+
         GPIO.write(27, 0)
 
       6 ->
-        Translator.leds_on(state.layer6)
+
         GPIO.write(17, 0)
     end
 
@@ -139,6 +111,10 @@ defmodule LedCubeRpi3.Server do
     Process.sleep(state.layer_delay)
     Process.send(self(), {:layer_rotation, pos + 1}, [:nosuspend])
 
+    {:noreply, state}
+  end
+
+  def handle_info(:last_layer_change, state) do
     {:noreply, state}
   end
 
@@ -160,17 +136,15 @@ defmodule LedCubeRpi3.Server do
   """
 
   def handle_info({:palabra, word}, state) do
-    word = String.codepoints(word)
+    word = String.codepoints(Atom.to_string(word))
 
     for c <- word do
-      for layer <- 1..6 do
-        GenServer.cast(self(), {:set_layer_leds, layer, Caracteres.select_case(c)})
-      end
+      GenServer.cast(self(), {:set_layer_leds, Caracteres.select_case(c)})
+
       receive do
         :last_layer_change ->
           :ok
       end
-      
     end
 
     {:noreply, state}
