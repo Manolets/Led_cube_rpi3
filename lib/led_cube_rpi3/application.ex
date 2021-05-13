@@ -15,6 +15,7 @@ defmodule LedCubeRpi3.Application do
         # Children for all targets
         # Starts a worker by calling: LedCubeRpi3.Worker.start_link(arg)
         # {LedCubeRpi3.Worker, arg},
+        LedCubeRpi3.CubeSupervisor.start_link()
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)

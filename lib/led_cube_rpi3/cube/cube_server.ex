@@ -9,6 +9,10 @@ defmodule LedCubeRpi3.Server do
 
   @layer_gpios [7, 8, 9, 11, 17, 27]
   @moduledoc """
+
+  RingLogger.attach
+  LedCubeRpi3.CubeSupervisor.start_link()
+
   @all_leds [:aa, :ab, :ac, :ad, :ae, :af, :ba, :bb, :bc, :bd, :be, :bf, :ca, :cb, :cc, :cd, :ce, 
   :cf, :da, :db, :dc, :dd, :de, :df, :ea, :eb, :ec, :ed, :ee, :ef, :fa, :fb, :fc, :fd, :fe, :ff]
   """
@@ -166,11 +170,11 @@ defmodule LedCubeRpi3.Server do
       for layer <- 1..6 do
         GenServer.cast(self(), {:set_layer_leds, layer, Caracteres.select_case(c)})
       end
+
       receive do
         :last_layer_change ->
           :ok
       end
-      
     end
 
     {:noreply, state}
